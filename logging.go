@@ -131,8 +131,33 @@ func task(t int, f string, a ...interface{}) {
 
 // Error works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
 func Error(f string, a ...interface{}) {
-	a = coalesce(red("[ERROR]"), a...)
-	fmt.Printf("%s %s: "+f+"\n", a...)
+	errorLog(0, f, a...)
+}
+
+// ErrorV works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
+func ErrorV(f string, a ...interface{}) {
+	errorLog(1, f, a...)
+}
+
+// LogTask works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
+func errorLog(t int, f string, a ...interface{}) {
+	switch t {
+	case 1:
+		if verbose || debug {
+			a = coalesce(red("[ERROR] "), a...)
+			fmt.Printf("%s %s: "+f+"\n", a...)
+			return
+		}
+		fallthrough
+	case 2:
+		if debug {
+			a = coalesce(red("[ERROR] "), a...)
+			fmt.Printf("%s %s: "+f+"\n", a...)
+		}
+	default:
+		a = coalesce(red("[ERROR] "), a...)
+		fmt.Printf("%s %s: "+f+"\n", a...)
+	}
 }
 
 // Obj prints out the given object using the spew library
