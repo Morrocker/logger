@@ -21,7 +21,7 @@ var (
 
 // Notice works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
 func Notice(f string, a ...interface{}) {
-	a = coalesce(blue("[IMPOR]"), a...)
+	a = coalesce(blue("[NOTE]"), a...)
 	fmt.Printf("%s %s: "+f+"\n", a...)
 }
 
