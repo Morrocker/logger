@@ -12,16 +12,16 @@ var debug, verbose bool
 
 //var yellow := color.New(color.FgHiYellow).SprintFunc()
 var (
-	red     = color.New(color.FgHiRed).SprintFunc()
-	cyan    = color.New(color.FgHiCyan).SprintFunc()
-	green   = color.New(color.FgHiGreen).SprintFunc()
-	yellow  = color.New(color.FgHiYellow).SprintFunc()
-	magenta = color.New(color.FgHiMagenta).SprintFunc()
+	red    = color.New(color.FgHiRed).SprintFunc()
+	cyan   = color.New(color.FgHiCyan).SprintFunc()
+	green  = color.New(color.FgHiGreen).SprintFunc()
+	yellow = color.New(color.FgHiYellow).SprintFunc()
+	blue   = color.New(color.FgHiBlue).SprintFunc()
 )
 
 // Notice works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
 func Notice(f string, a ...interface{}) {
-	a = coalesce(magenta("[IMPOR]"), a...)
+	a = coalesce(blue("[IMPOR]"), a...)
 	fmt.Printf("%s %s: "+f+"\n", a...)
 }
 
