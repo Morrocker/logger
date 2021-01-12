@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -144,19 +145,19 @@ func errorLog(t int, f string, a ...interface{}) {
 	switch t {
 	case 1:
 		if verbose || debug {
-			a = coalesce(red("[ERROR] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
+			a = coalesce(red("[ERROR]"), a...)
+			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 			return
 		}
 		fallthrough
 	case 2:
 		if debug {
-			a = coalesce(red("[ERROR] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
+			a = coalesce(red("[ERROR]"), a...)
+			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 		}
 	default:
-		a = coalesce(red("[ERROR] "), a...)
-		fmt.Printf("%s %s: "+f+"\n", a...)
+		a = coalesce(red("[ERROR]"), a...)
+		fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 	}
 }
 
