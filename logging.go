@@ -2,6 +2,10 @@ package logger
 
 import (
 	"fmt"
+<<<<<<< HEAD
+=======
+	"io"
+>>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 	"os"
 	"time"
 
@@ -9,183 +13,311 @@ import (
 	"github.com/fatih/color"
 )
 
-var debug, verbose bool
-
-//var yellow := color.New(color.FgHiYellow).SprintFunc()
 var (
-	red    = color.New(color.FgHiRed).SprintFunc()
-	cyan   = color.New(color.FgHiCyan).SprintFunc()
-	green  = color.New(color.FgHiGreen).SprintFunc()
-	yellow = color.New(color.FgHiYellow).SprintFunc()
-	blue   = color.New(color.FgHiBlue).SprintFunc()
+	silent      = false
+	debug       = false
+	verbose     = false
+	timestamp   = true
+	preNote     = true
+	tsFormat    = "2006-01-02 15:04:05"
+	red         = color.New(color.FgHiRed).SprintFunc()
+	errorPreMsg = "[ERROR]"
+	cyan        = color.New(color.FgHiCyan).SprintFunc()
+	infoPreMsg  = "[INFO]"
+	green       = color.New(color.FgHiGreen).SprintFunc()
+	taskPreMsg  = "[TASK]"
+	yellow      = color.New(color.FgHiYellow).SprintFunc()
+	alertPreMsg = "[ALERT]"
+	blue        = color.New(color.FgHiBlue).SprintFunc()
+	notePreMsg  = "[NOTE]"
 )
 
 // Notice works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func Notice(f string, a ...interface{}) {
-	a = coalesce(blue("[NOTE] "), a...)
-	fmt.Printf("%s %s: "+f+"\n", a...)
+func Notice(format string, a ...interface{}) {
+	noticeLog(1, format, a...)
+}
+
+// NoticeV same as Notice(), but will only print when verbose or debug options are set
+func NoticeV(format string, a ...interface{}) {
+	noticeLog(2, format, a...)
+}
+
+// NoticeD same as Notice(), but will only print when the debug options is set
+func NoticeD(format string, a ...interface{}) {
+	noticeLog(3, format, a...)
+}
+
+func noticeLog(t int, f string, a ...interface{}) {
+	print := false
+	switch t {
+	case 1:
+		print = true
+	case 2:
+		if verbose || debug {
+			print = true
+		}
+	case 3:
+		if debug {
+			print = true
+		}
+	}
+	if print && !silent {
+		printLog(os.Stdout, "blue", f, a...)
+	}
 }
 
 // Alert works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func Alert(f string, a ...interface{}) {
-	alert(0, f, a...)
+func Alert(format string, a ...interface{}) {
+	alertLog(1, format, a...)
 }
 
-// AlertV works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose is enabled.
-func AlertV(f string, a ...interface{}) {
-	alert(1, f, a...)
+// AlertV same as Alert(), but will only print when verbose or debug options are set
+func AlertV(format string, a ...interface{}) {
+	alertLog(2, format, a...)
 }
 
-// AlertD works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose or debug is enabled.
-func AlertD(f string, a ...interface{}) {
-	alert(2, f, a...)
+// AlertD same as Alert(), but will only print when the debug options is set
+func AlertD(format string, a ...interface{}) {
+	alertLog(3, format, a...)
 }
 
-// LogAlert works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func alert(t int, f string, a ...interface{}) {
+func alertLog(t int, f string, a ...interface{}) {
+	print := false
 	switch t {
 	case 1:
-		if verbose || debug {
-			a = coalesce(yellow("[ALERT]"), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
-		}
+		print = true
 	case 2:
-		if debug {
-			a = coalesce(yellow("[ALERT]"), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
+		if verbose || debug {
+			print = true
 		}
-	default:
-		a = coalesce(yellow("[ALERT]"), a...)
-		fmt.Printf("%s %s: "+f+"\n", a...)
+	case 3:
+		if debug {
+			print = true
+		}
+	}
+	if print && !silent {
+		printLog(os.Stdout, "yellow", f, a...)
 	}
 }
 
 // Info works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end.
-func Info(f string, a ...interface{}) {
-	info(0, f, a...)
+func Info(format string, a ...interface{}) {
+	infoLog(1, format, a...)
 }
 
-// InfoV works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose is enabled.
-func InfoV(f string, a ...interface{}) {
-	info(1, f, a...)
+// InfoV same as Info(), but will only print when verbose or debug options are set
+func InfoV(format string, a ...interface{}) {
+	infoLog(2, format, a...)
 }
 
-// InfoD works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose or debug is enabled.
-func InfoD(f string, a ...interface{}) {
-	info(2, f, a...)
+// InfoD same as Info(), but will only print when the debug options is set
+func InfoD(format string, a ...interface{}) {
+	infoLog(3, format, a...)
 }
 
-// LogInfo works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func info(t int, f string, a ...interface{}) {
+func infoLog(t int, f string, a ...interface{}) {
+	print := false
 	switch t {
 	case 1:
-		if verbose || debug {
-			a = coalesce(cyan("[INFO] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
-		}
+		print = true
 	case 2:
-		if debug {
-			a = coalesce(cyan("[INFO] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
+		if verbose || debug {
+			print = true
 		}
-	default:
-		a = coalesce(cyan("[INFO] "), a...)
-		fmt.Printf("%s %s: "+f+"\n", a...)
+	case 3:
+		if debug {
+			print = true
+		}
+	}
+	if print && !silent {
+		printLog(os.Stdout, "cyan", f, a...)
 	}
 }
 
 // Task works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end.
-func Task(f string, a ...interface{}) {
-	task(0, f, a...)
+func Task(format string, a ...interface{}) {
+	taskLog(1, format, a...)
 }
 
-// TaskV works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose is enabled.
-func TaskV(f string, a ...interface{}) {
-	task(1, f, a...)
+// TaskV same as Task(), but will only print when verbose or debug options are set
+func TaskV(format string, a ...interface{}) {
+	taskLog(2, format, a...)
 }
 
-// TaskD works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end. Only outputs if verbose or debug is enabled.
-func TaskD(f string, a ...interface{}) {
-	task(2, f, a...)
+// TaskD same as Task(), but will only print when the debug options is set
+func TaskD(format string, a ...interface{}) {
+	taskLog(3, format, a...)
 }
 
-// LogTask works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func task(t int, f string, a ...interface{}) {
+func taskLog(t int, f string, a ...interface{}) {
+	print := false
 	switch t {
 	case 1:
-		if verbose || debug {
-			a = coalesce(green("[TASK] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
-			return
-		}
-		fallthrough
+		print = true
 	case 2:
-		if debug {
-			a = coalesce(green("[TASK] "), a...)
-			fmt.Printf("%s %s: "+f+"\n", a...)
+		if verbose || debug {
+			print = true
 		}
-	default:
-		a = coalesce(green("[TASK] "), a...)
-		fmt.Printf("%s %s: "+f+"\n", a...)
+	case 3:
+		if debug {
+			print = true
+		}
+	}
+	if print && !silent {
+		printLog(os.Stdout, "green", f, a...)
 	}
 }
 
 // Error works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func Error(f string, a ...interface{}) {
-	errorLog(0, f, a...)
+func Error(format string, a ...interface{}) {
+	errorLog(1, format, a...)
 }
 
-// ErrorV works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
-func ErrorV(f string, a ...interface{}) {
-	errorLog(1, f, a...)
+// ErrorV same as Error(), but will only print when verbose or debug options are set
+func ErrorV(format string, a ...interface{}) {
+	errorLog(2, format, a...)
 }
 
-// LogTask works like a fmt.Printf however it adds, datetime, a prefix label and a return at the end
+// ErrorD same as Error(), but will only print when the debug options is set
+func ErrorD(format string, a ...interface{}) {
+	errorLog(3, format, a...)
+}
+
 func errorLog(t int, f string, a ...interface{}) {
+	print := false
 	switch t {
 	case 1:
+		print = true
+	case 2:
 		if verbose || debug {
+<<<<<<< HEAD
 			a = coalesce(red("[ERROR]"), a...)
 			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 			return
+=======
+			print = true
+>>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 		}
-		fallthrough
-	case 2:
+	case 3:
 		if debug {
+<<<<<<< HEAD
 			a = coalesce(red("[ERROR]"), a...)
 			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 		}
 	default:
 		a = coalesce(red("[ERROR]"), a...)
 		fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
+=======
+			print = true
+		}
+	}
+	if print && !silent {
+		printLog(os.Stdout, "red", f, a...)
+>>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 	}
 }
 
 // Obj prints out the given object using the spew library
-func Obj(obj interface{}) {
-	if debug {
-		d := getDate()
-		fmt.Printf("%s %s.\n", green("[OBJECT START]"), d)
-		spew.Dump(obj)
-		fmt.Printf("%s %s.\n", green("[OBJECT END]"), d)
+func Obj(obj interface{}, objName string) {
+	objLog(1, obj, objName)
+}
+
+// ObjV same as Obj(), but will only print when verbose or debug options are set
+func ObjV(obj interface{}, objName string) {
+	objLog(2, obj, objName)
+}
+
+// ObjD same as Obj(), but will only print when the debug options is set
+func ObjD(obj interface{}, objName string) {
+	objLog(3, obj, objName)
+}
+
+func objLog(t int, obj interface{}, objName string) {
+	print := false
+	switch t {
+	case 1:
+		print = true
+	case 2:
+		if verbose || debug {
+			print = true
+		}
+	case 3:
+		if debug {
+			print = true
+		}
 	}
-
-}
-
-func coalesce(header string, a ...interface{}) []interface{} {
-	d := getDate()
-	ret := []interface{}{header, d}
-	ret = append(ret, a...)
-	return ret
-}
-
-func getDate() string {
-	d := time.Now().Format("2006-01-02 15:04:05")
-	return d
+	if print && !silent {
+		printLog(os.Stderr, "cyan", "Object: %s", objName)
+		spew.Dump(obj)
+	}
 }
 
 // SetModes sets the verbose and debug variables according to given parameters
 func SetModes(v, d bool) {
 	verbose = v
 	debug = d
+}
+
+// ToggleSilent enables/disables silent mode. No logs will be shown if enabled.
+func ToggleSilent() {
+	silent = !silent
+}
+
+// ToggleTimestamp enables/disables timestamp on log
+func ToggleTimestamp() {
+	timestamp = !timestamp
+}
+
+// TogglePreNote enables/disables timestamp on log
+func TogglePreNote() {
+	preNote = !preNote
+}
+
+func logFormat(format string) string {
+	var ret string
+	if timestamp && preNote {
+		ret = "%s\t%s: "
+	} else if timestamp {
+		ret = "%s: "
+	} else if preNote {
+		ret = "%s\t"
+	}
+	return ret + format
+}
+
+func printLog(writer io.Writer, color, format string, a ...interface{}) {
+	format = logFormat(format)
+	switch color {
+	case "blue":
+		a = coalesce(blue(notePreMsg), a...)
+	case "red":
+		a = coalesce(red(errorPreMsg), a...)
+	case "yellow":
+		a = coalesce(yellow(alertPreMsg), a...)
+	case "cyan":
+		a = coalesce(cyan(infoPreMsg), a...)
+	case "green":
+		a = coalesce(green(taskPreMsg), a...)
+	}
+	fmt.Fprintf(writer, format+"\n", a...)
+}
+
+func coalesce(header string, a ...interface{}) []interface{} {
+	d := getDate()
+	var ret []interface{}
+	if timestamp && preNote {
+		ret = []interface{}{header, d}
+	} else if timestamp {
+		ret = []interface{}{d}
+	} else if preNote {
+		ret = []interface{}{header}
+	}
+
+	ret = append(ret, a...)
+	return ret
+}
+
+func getDate() string {
+	d := time.Now().Format(tsFormat)
+	return d
 }
