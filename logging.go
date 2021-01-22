@@ -2,10 +2,7 @@ package logger
 
 import (
 	"fmt"
-<<<<<<< HEAD
-=======
 	"io"
->>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 	"os"
 	"time"
 
@@ -190,30 +187,18 @@ func errorLog(t int, f string, a ...interface{}) {
 		print = true
 	case 2:
 		if verbose || debug {
-<<<<<<< HEAD
 			a = coalesce(red("[ERROR]"), a...)
 			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 			return
-=======
-			print = true
->>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 		}
 	case 3:
 		if debug {
-<<<<<<< HEAD
 			a = coalesce(red("[ERROR]"), a...)
 			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
 		}
 	default:
 		a = coalesce(red("[ERROR]"), a...)
 		fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
-=======
-			print = true
-		}
-	}
-	if print && !silent {
-		printLog(os.Stdout, "red", f, a...)
->>>>>>> refactored logger, reduced and reworked code to be easier to read and more compact. Factorized duplicated code into support functions. Added silent mode, removable and modifiable timestamp, removable prepended note
 	}
 }
 
