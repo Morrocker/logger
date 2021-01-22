@@ -187,18 +187,15 @@ func errorLog(t int, f string, a ...interface{}) {
 		print = true
 	case 2:
 		if verbose || debug {
-			a = coalesce(red("[ERROR]"), a...)
-			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
-			return
+			print = true
 		}
 	case 3:
 		if debug {
-			a = coalesce(red("[ERROR]"), a...)
-			fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
+			print = true
 		}
-	default:
-		a = coalesce(red("[ERROR]"), a...)
-		fmt.Fprintf(os.Stderr, "%s %s: "+f+"\n", a...)
+	}
+	if print && !silent {
+		printLog(os.Stderr, "red", f, a...)
 	}
 }
 
