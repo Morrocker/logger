@@ -14,6 +14,7 @@ var (
 	silent      = false
 	debug       = false
 	verbose     = false
+	benchmark   = false
 	timestamp   = true
 	preNote     = true
 	tsFormat    = "2006-01-02 15:04:05"
@@ -44,6 +45,11 @@ func NoticeD(format string, a ...interface{}) {
 	noticeLog(3, format, a...)
 }
 
+// NoticeB same as Notice(), but will only print when the benchmark options is set
+func NoticeB(format string, a ...interface{}) {
+	noticeLog(4, format, a...)
+}
+
 func noticeLog(t int, f string, a ...interface{}) {
 	print := false
 	switch t {
@@ -57,7 +63,12 @@ func noticeLog(t int, f string, a ...interface{}) {
 		if debug {
 			print = true
 		}
+	case 4:
+		if benchmark {
+			print = true
+		}
 	}
+
 	if print && !silent {
 		printLog(os.Stdout, "blue", f, a...)
 	}
@@ -78,6 +89,11 @@ func AlertD(format string, a ...interface{}) {
 	alertLog(3, format, a...)
 }
 
+// AlertB same as Alert(), but will only print when the benchmark options is set
+func AlertB(format string, a ...interface{}) {
+	alertLog(4, format, a...)
+}
+
 func alertLog(t int, f string, a ...interface{}) {
 	print := false
 	switch t {
@@ -89,6 +105,10 @@ func alertLog(t int, f string, a ...interface{}) {
 		}
 	case 3:
 		if debug {
+			print = true
+		}
+	case 4:
+		if benchmark {
 			print = true
 		}
 	}
@@ -112,6 +132,11 @@ func InfoD(format string, a ...interface{}) {
 	infoLog(3, format, a...)
 }
 
+// InfoB same as Info(), but will only print when the banchnark options is set
+func InfoB(format string, a ...interface{}) {
+	infoLog(4, format, a...)
+}
+
 func infoLog(t int, f string, a ...interface{}) {
 	print := false
 	switch t {
@@ -123,6 +148,10 @@ func infoLog(t int, f string, a ...interface{}) {
 		}
 	case 3:
 		if debug {
+			print = true
+		}
+	case 4:
+		if benchmark {
 			print = true
 		}
 	}
@@ -146,6 +175,11 @@ func TaskD(format string, a ...interface{}) {
 	taskLog(3, format, a...)
 }
 
+// TaskB same as Task(), but will only print when the benchmark options is set
+func TaskB(format string, a ...interface{}) {
+	taskLog(4, format, a...)
+}
+
 func taskLog(t int, f string, a ...interface{}) {
 	print := false
 	switch t {
@@ -157,6 +191,10 @@ func taskLog(t int, f string, a ...interface{}) {
 		}
 	case 3:
 		if debug {
+			print = true
+		}
+	case 4:
+		if benchmark {
 			print = true
 		}
 	}
@@ -180,6 +218,11 @@ func ErrorD(format string, a ...interface{}) {
 	errorLog(3, format, a...)
 }
 
+// ErrorB same as Error(), but will only print when the benchmark options is set
+func ErrorB(format string, a ...interface{}) {
+	errorLog(4, format, a...)
+}
+
 func errorLog(t int, f string, a ...interface{}) {
 	print := false
 	switch t {
@@ -191,6 +234,10 @@ func errorLog(t int, f string, a ...interface{}) {
 		}
 	case 3:
 		if debug {
+			print = true
+		}
+	case 4:
+		if benchmark {
 			print = true
 		}
 	}
@@ -235,9 +282,10 @@ func objLog(t int, obj interface{}, objName string) {
 }
 
 // SetModes sets the verbose and debug variables according to given parameters
-func SetModes(v, d bool) {
+func SetModes(v, d, b bool) {
 	verbose = v
 	debug = d
+	benchmark = b
 }
 
 // ToggleSilent enables/disables silent mode. No logs will be shown if enabled.
